@@ -24,17 +24,47 @@ ApplicationWindow {
         Column{
             spacing: app.fs
             anchors.centerIn: parent
-             TextArea{
-                id:code
+            Flickable{
                 width: parent.parent.width
-                height: parent.parent.height-btnSend.height-app.fs*2
-                font.pixelSize: app.fs*2
+                height: parent.parent.height-btnSend.height-parent.spacing
+                contentWidth: code.width
+                contentHeight: code.height
+                Row{
+                    Column{
+                        Repeater{
+                            model:code.lineCount
+                            Item{
+                                width: code.cursorRectangle.height*2
+                                height: code.cursorRectangle.height
+                                Text {
+                                text: '<b>'+parseInt(index+1)+'.</b>'
+                                font.pixelSize: parent.height*0.8
+                                anchors.bottom:parent.bottom
+                                anchors.right: parent.right
+                            }
+                            }
+                        }
+                    }
+                TextEdit{
+                    id:code
+                    width:parent.parent.width-app.fs
+                    height: contentHeight
+                    font.pixelSize: app.fs*2
+                    textFormat: Text.PlainText
+                    /*cursorRectangle: Rectangle{
+                        color: 'red'
+                        width: app.fs*0.5
+                    }*/
+                    //lin
+                }
+                }
             }
-             Button{
-                 id:btnSend
+            Button{
+                id:btnSend
                 text: 'Send Code'
                 onClicked:wsSqlClient.sendCode(code.text)
-             }
+                anchors.right: parent.right
+            }
         }
     }
 

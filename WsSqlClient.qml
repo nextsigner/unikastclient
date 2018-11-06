@@ -65,9 +65,13 @@ Item {
                             console.log('Unik WsSql: Addign User: '+ul[i])
                             var sql = 'INSERT INTO users(user, ws, ms)VALUES(\''+ul[i]+'\', \''+r.url+'\',  '+d.getTime()+')'
                             unik.sqlQuery(sql)
+                            if(''+ul[i]===tiUserName.text){
+                                xUserName.visible=false
+                            }
                         }
                         //listModelUser.arrayUserList = ch.objects.chatserver.userList
                         //listModelUser.updateUserList()
+
                         l.visible=false
                         //                        mainUi.userlist.text = '';
                         //                        ch.objects.chatserver.userList.forEach(function(user) {
