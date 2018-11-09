@@ -14,6 +14,11 @@ ApplicationWindow {
     color: 'black'
     property int fs: appSettings.fs
 
+    property color c1: "#62DA06"
+    property color c2: "#8DF73B"
+    property color c3: "black"
+    property color c4: "white"
+
     Settings{
         id: appSettings
         category: 'conf-unikasclient'
@@ -33,10 +38,8 @@ ApplicationWindow {
         id:unikTextEditor
         anchors.fill: parent
         fs:app.fs
+        color: app.c1
     }
-
-
-
     WsSqlClient{
         id:wsSqlClient
         opacity: 0.0
@@ -53,27 +56,6 @@ ApplicationWindow {
     Shortcut {
         sequence: "Shift+Left"
         onActivated: {
-            if(!appSettings.cbs){
-                app.mp.seek(app.mp.position-1000)
-            }else{
-                controles.back()
-            }
-        }
-    }
-    Shortcut {
-        sequence: "Shift+Up"
-        onActivated: {
-           if(appSettings.fs<100){
-            appSettings.fs++
-           }
-        }
-    }
-    Shortcut {
-        sequence: "Shift+Down"
-        onActivated: {
-            if(appSettings.fs>8){
-                appSettings.fs--
-            }
 
         }
     }
