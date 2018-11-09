@@ -40,13 +40,48 @@ Item{
     Flickable{
         id:flTE
         width: r.width
-        height:r.height-xTF.height-r.fs
+        height:r.height
         contentWidth: te.contentWidth*1.5
         contentHeight: te.contentHeight*1.5
         x:((''+te.lineCount).length)*r.fs
-        anchors.top: xTF.bottom
-        anchors.topMargin: r.fs
         enabled: r.modo===1
+        Rectangle{
+            id:xColNLI
+            color:r.backgroundColor
+            width: ((''+te.lineCount).length)*r.fs
+            height: colNLI.height
+            y:xTE.y
+            anchors.right: xTE.left
+            Rectangle{
+                width: 1
+                height: r.height
+                anchors.right: parent.right
+                color: r.color
+            }
+
+            Column{
+                id:colNLI
+                width: parent.width-2
+                Repeater{
+                    model:te.lineCount
+                    Item{
+                        id:xNlI
+                        width:(nli.text.length-8)*r.fs
+                        height: r.fs*1.3
+                        anchors.right: parent.right
+                        Text {
+                            id:nli
+                            text: '<b>'+parseInt(index+1)+'.</b>'
+                            font.pixelSize: parent.height*0.8
+                            anchors.bottom:parent.bottom
+                            anchors.right: parent.right
+                            color: 'white'
+                        }
+                        //Component.onCompleted: colNL.width=nl.contentWidth
+                    }
+                }
+            }
+        }
         Item{
             id:xTE
             width:te.text===''?1:te.contentWidth
@@ -57,7 +92,6 @@ Item{
                 text:r.text
                 font.pixelSize: r.fs
                 color: r.color
-
                 property bool ins: false
                 property string ccl: '.'
                 cursorDelegate: Rectangle{
@@ -66,17 +100,17 @@ Item{
                     height: r.fs
                     radius: width*0.5
                     color:'transparent'
-//                    onXChanged: {
-//                        var nc=0
-//                        var n=te.cursorPosition
-//                        if(n>0){
-////                            while(te.text.substring(n-1,n)!=='\n'||n>0){
-////                                nc++
-////                                n--
-////                            }
-//                        }
-//                        r.col=nc
-//                    }
+                    //                    onXChanged: {
+                    //                        var nc=0
+                    //                        var n=te.cursorPosition
+                    //                        if(n>0){
+                    ////                            while(te.text.substring(n-1,n)!=='\n'||n>0){
+                    ////                                nc++
+                    ////                                n--
+                    ////                            }
+                    //                        }
+                    //                        r.col=nc
+                    //                    }
                     Rectangle{
                         id:tec
                         width: cc.contentWidth;
@@ -144,10 +178,10 @@ Item{
                         te.vpe=0
                     }
                 }
-                Keys.onReturnPressed: {
+                /*Keys.onReturnPressed: {
                     vpe++
                     tvpe.start()
-                }
+                }*/
                 onTextChanged: {
                     te.ins=true
                     te.setPos()
@@ -161,43 +195,6 @@ Item{
                     flTE.contentY=(te.cursorRectangle.y-r.height/2)+r.fs*0.5+flTE.y
                     r.lin=parseInt(te.cursorRectangle.y/te.cursorRectangle.height)
 
-                }
-            }
-        }
-        Rectangle{
-            id:xColNLI
-            color:r.backgroundColor
-            width: ((''+te.lineCount).length)*r.fs
-            height: colNLI.height
-            y:xTE.y
-            anchors.right: xTE.left
-            Rectangle{
-                width: 1
-                height: r.height
-                anchors.right: parent.right
-                color: r.color
-            }
-
-            Column{
-                id:colNLI
-                width: parent.width-2
-                Repeater{
-                    model:te.lineCount
-                    Item{
-                        id:xNlI
-                        width:(nli.text.length-8)*r.fs
-                        height: r.fs*1.3
-                        anchors.right: parent.right
-                        Text {
-                            id:nli
-                            text: '<b>'+parseInt(index+1)+'.</b>'
-                            font.pixelSize: parent.height*0.8
-                            anchors.bottom:parent.bottom
-                            anchors.right: parent.right
-                            color: 'white'
-                        }
-                        //Component.onCompleted: colNL.width=nl.contentWidth
-                    }
                 }
             }
         }
@@ -243,20 +240,27 @@ Item{
     Rectangle{
         id:xTF
         color: r.backgroundColor
-        width: tf.contentWidth+r.fs
-        height: r.fs*1.2
+        width: r.width*0.8
+        height: tf.contentHeight+r.fs
         border.width: 1
-        border.color: r.color
+        border.color: confirmar===0?r.color:'red'
+        anchors.centerIn: r
         visible:r.modo===2
         onVisibleChanged: {
             if(visible){
                 tf.focus=true
                 tf.cursorPosition=tf.text.length-1
+            }else{
+                xTF.confirmar=0
+                tf.color=r.color
             }
         }
+        property int modo: -1
+        property int confirmar: 0
         TextEdit{
             id:tf
             text:eSettings.currentFilePath
+            width: parent.width-r.fs
             font.pixelSize: r.fs
             color: r.color
             anchors.verticalCenter: parent.verticalCenter
@@ -269,22 +273,61 @@ Item{
                 color:cv?r.color:'transparent'
                 property bool cv: true
                 Timer{
+                    id:ttf
                     running: xTF.visible
                     repeat: true
                     interval: 650
-                    onTriggered: tfCursor.cv=!tfCursor.cv
+                    property int v: 0
+                    onTriggered: {
+                        v++
+                        tfCursor.cv=!tfCursor.cv
+                        if(v===3){
+                            tf.text=eSettings.currentFilePath
+                        }
+                    }
                 }
             }
-            width: r.width
             height: r.fs*1.2
             wrapMode: Text.WordWrap
             onTextChanged: {
                 tf.color=unik.fileExist(tf.text)?r.color:'red'
             }
             Keys.onReturnPressed: {
-                eSettings.currentFilePath=tf.text
-                r.text=unik.getFile(eSettings.currentFilePath)
-                console.log('UnikEditor Loading: '+r.text)
+                if(xTF.modo===1){
+                    if(unik.fileExist(tf.text)){
+                        te.cursorPosition=0
+                        eSettings.currentFilePath=tf.text
+                        r.text=unik.getFile(eSettings.currentFilePath)
+                        r.modificado=false
+                        xTF.confirmar=0
+                        xTF.visible=false
+                        r.modo=1
+                        te.focus=true
+                        te.setPos()
+                    }else{
+                        tf.text='File not exist'
+                        ttf.v=0
+                    }
+                    console.log('UnikEditor Loading: '+r.text)
+                }else if(xTF.modo===2){
+                    if(xTF.confirmar===0&&unik.fileExist(tf.text)){
+                        xTF.confirmar=1
+                    }else{
+                        te.cursorPosition=0
+                        eSettings.currentFilePath=tf.text
+                        unik.setFile(eSettings.currentFilePath, te.text)
+                        r.text=te.text
+                        xTF.confirmar=0
+                        xTF.visible=false
+                        r.modo=1
+                        te.focus=true
+                        te.setPos()
+                    }
+
+                }else{
+                    xTF.visible=false
+                }
+
             }
             Keys.onEscapePressed: r.modo=1
         }
@@ -326,17 +369,25 @@ Item{
     }
 
     Text{
-        text:'line: '+r.lin+' column: '+r.col
-        font.pixelSize: r.fs*0.5
+        text:'line: '+r.lin+' column: '+r.col+' mode: '+r.modo
+        font.pixelSize: r.fs
         color: r.color
         anchors.bottom: r.bottom
         anchors.bottomMargin: r.fs*2
         anchors.right: r.right
     }
     Shortcut {
+        sequence: "Esc"
+        onActivated: {
+            r.modo=0
+        }
+    }
+    Shortcut {
         sequence: "Ctrl+Shift+a"
         onActivated: {
             r.modo=2
+            xTF.modo=1
+            xTF.visible=true
         }
     }
     Shortcut {
@@ -347,10 +398,16 @@ Item{
         }
     }
     Shortcut {
+        sequence: "Ctrl+Shift+s"
+        onActivated: {
+            xTF.visible=true
+            xTF.modo=2
+        }
+    }
+    Shortcut {
         sequence: "Shift+Up"
         context: Qt.ApplicationShortcut
         onActivated: {
-            console.log('---------------------')
             if(appSettings.fs<100){
                 appSettings.fs++
             }
@@ -391,39 +448,90 @@ Item{
         sequence: "m"
         context: Qt.ApplicationShortcut
         onActivated: {
-            /*var ca=0;
-            var ca2=0;
-            var n=te.cursorPosition
+            var n0=te.cursorPosition
+            var n=n0
             while(te.text.substring(n-1,n)!=='\n'){
-                ca++
                 n--
+                if(n<1){
+                    break
+                }
             }
-            n=te.cursorPosition
-            while(te.text.substring(n,n+1)!=='\n'){
-                ca2++
-                n++
+            var caracteresAnteriores=te.cursorPosition-n
+            //console.log('atras hay: '+caracteresAnteriores)
+            var n1=n0
+            var l=''
+            while(l!=='\n'){
+                l=''+te.text.substring(n1,n1+1)
+                n1++
+                if(n1>te.text.length-1){
+                    break
+                }
             }
-            te.cursorPosition+=ca+ca2+1*/
+            var caracteresPosteriores=n1-1
+            var resCarPost=caracteresPosteriores-te.cursorPosition
+            //console.log('adelante hay: '+resCarPost)
+            var longProximaLinea=0
+            var rec=''
+            var n2=n0+resCarPost+1
+            l=''
+            while(l!=='\n'){
+                l=''+te.text.substring(n2,n2+1)
+                rec+=l
+                n2++
+                if(n2>te.text.length-1){
+                    break
+                }
+            }
+            longProximaLinea=rec.length-1
+            if(caracteresAnteriores>longProximaLinea){
+                te.cursorPosition=n0+resCarPost+longProximaLinea+1
+            }else{
+                te.cursorPosition=n0+resCarPost+caracteresAnteriores+1
+            }
         }
     }
     Shortcut {
         sequence: "k"
         context: Qt.ApplicationShortcut
         onActivated: {
-            console.log('-->>'+parseInt(te.cursorRectangle.y/te.cursorRectangle.height))
-            /*var ca=0;
-            var ca2=0;
-            var n=te.cursorPosition
+            var n0=te.cursorPosition
+            var n=n0
             while(te.text.substring(n-1,n)!=='\n'){
-                ca++
-                n++
-            }
-            n=te.cursorPosition
-            while(te.text.substring(n,n+1)!=='\n'){
-                ca2++
                 n--
+                if(n<1){
+                    break
+                }
             }
-            te.cursorPosition-=ca+ca2+1*/
+            var caracteresAnteriores=te.cursorPosition-n
+            var n1=n0
+            var l=''
+            while(l!=='\n'){
+                l=''+te.text.substring(n1,n1+1)
+                n1++
+                if(n1>te.text.length-1){
+                    break
+                }
+            }
+            var caracteresPosteriores=n1-1
+            var resCarPost=caracteresPosteriores-te.cursorPosition
+            var longAnteriorLinea=0
+            var rec=''
+            var n2=n0-caracteresAnteriores-2
+            l=''
+            while(l!=='\n'){
+                l=''+te.text.substring(n2,n2+1)
+                rec+=l
+                n2--
+                if(n2<1){
+                    break
+                }
+            }
+            longAnteriorLinea=rec.length-1
+            if(caracteresAnteriores<longAnteriorLinea){
+                te.cursorPosition=n0-caracteresAnteriores-(longAnteriorLinea-caracteresAnteriores+1)
+            }else{
+                te.cursorPosition=n0-caracteresAnteriores-1
+            }
         }
     }
 
