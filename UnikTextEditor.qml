@@ -1,10 +1,11 @@
 import QtQuick 2.0
+import QtQuick.Controls 2.0
 
 Rectangle{
     id:r
     property var flowLin
 
-    property int modo: -1
+    property int modo: 1
 
     property int fs: width*0.04
 
@@ -16,6 +17,9 @@ Rectangle{
     property string text:''
     property string uCar:''
     property int maxCols: 0
+
+
+    property string splitString:''
 
     focus: true
     Keys.onEscapePressed: {
@@ -32,26 +36,40 @@ Rectangle{
         }
     }
     Keys.onRightPressed:   {
-        r.cursorPosition++
-        if(r.currentCol<r.maxCols){
-            r.currentCol++
-        }
-
+        dDer()
     }
     Keys.onLeftPressed:   {
-        r.cursorPosition--
+
         if(r.currentCol>0){
+            //r.cursorPosition--
             r.currentCol--
         }
 
     }
     Keys.onUpPressed:  {
-        r.currentLine--
+        if(r.currentLine>0){
+            r.currentLine--
+        }else{
+            var nl=''
+            for(var i=0;i<r.maxCols;i++){
+                nl+=' '
+            }
+            //r.text=nl+'\n'+r.text
+            r.currentLine=0
+            //r.text='las dñlfkasñlf sñlkf ñslak fñsl'
+            updateChars()
+        }
+
     }
     Keys.onDownPressed:    {
+        var cantCol=xData.children[0].children[r.currentLine+1].children[0].children.length
+        console.log('AC'+cantCol)
+        if(r.currentCol>cantCol){
+            r.currentCol=cantCol-1
+        }
         r.currentLine++
     }
-    onCursorPositionChanged: r.centrar()
+    //onCursorPositionChanged: r.centrar()
     onCurrentLineChanged: r.sl()
     onCurrentColChanged:  r.sl()
     onModoChanged: {
@@ -73,6 +91,59 @@ Rectangle{
         x:((''+r.lineCount).length)*r.fs
         Row{
             id:xData
+            visible:false
+        }
+        Column{
+            id:xD
+            Repeater{
+                id:repXD
+                Rectangle{
+                    width:te.contentWidth
+                    height: r.fs*1.2
+                    border.width: 1
+                    border.color: 'black'
+                    TextEdit{
+                       id:te
+                        text:modelData
+                        font.pixelSize: r.fs
+                        color: 'black'
+                        cursorDelegate: Rectangle{width: 6;color:'red'}
+                        height: r.fs*1.2
+                        anchors.centerIn: parent
+                        property int vpr: 0
+                        onVprChanged: {
+                            if(vpr===2){
+                                //var d=new Date(Date.now())
+                                //r.splitString=''+d.getTime()+''+d.getTime()
+                                //te.insert(te.cursorPosition,r.splitString)
+                                //r.splitBlock()
+                                //r.splitString
+                                //te.insert(te.cursorPosition,''+xD.children[1].children[0].text+'-->')
+                            }else{
+
+                            }
+                        }
+                        Keys.onReturnPressed: {
+                            //vpr++
+                            //te.insert(te.cursorPosition,'\n')
+                            //tret.restart()
+                            var d=new Date(Date.now())
+                            r.splitString=''+d.getTime()+''+d.getTime()
+                            te.insert(te.cursorPosition,r.splitString)
+                            r.setEnter()
+                        }
+                        Timer{
+                            id:tret
+                            running: false
+                            repeat: false
+                            interval: 500
+                            onTriggered: {
+                                    te.vpr=0
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     Rectangle{
@@ -194,8 +265,14 @@ Rectangle{
         r.uCar='c0'
     }
 
-    function updateChars(){
-       r.lineCount=0
+    function updateCharsOut(){
+        /*for(var i=0;i<xData.children.length;i++){
+            xData.children[i].destroy(0)
+        }*/
+
+
+        r.lineCount=0
+
         var d=r.text.replace(/\\n/g,'\\\\n')
         var l=d.split('\n')
         var ccolLin='import QtQuick 2.0\nColumn{\nid:colLinea;\n'
@@ -227,17 +304,19 @@ Rectangle{
         var lin=Qt.createQmlObject(ccolLin, xData, 'qmlLin')
         for(var i=0;i<l.length;i++){
             var dl = ''+xData.children[0].children[i].l
-            //console.log('-->>'+dl)
             var m0=dl.split('')
             cl0='import QtQuick 2.0\nRow{\n'
-            //for(var i2=0;i2<m0.length;i2++){
-            for(var i2=0;i2<maxCol;i2++){
+            for(var i2=0;i2<m0.length;i2++){
                 cl0+='\nXChar{\n'
-                if(i2<m0.length){
-                    cl0+='      c:\''+m0[i2]+'\';\n'
+                if(i2===0){
+                    cl0+='      t:0;\n'
+                }else if(i2===m0.length-1){
+                    cl0+='      t:1;\n'
                 }else{
-                    cl0+='      c:\' \';\n'
+                    cl0+='      t:-1;\n'
                 }
+                cl0+='      c:\''+m0[i2]+'\';\n'
+
                 cl0+='      h: r.fs;\n'
                 cl0+='      fs: r.fs;\n'
                 cl0+='      color: objectName===r.uCar?"red":"transparent";\n'
@@ -250,18 +329,112 @@ Rectangle{
                 cl0+='\n}\n'
             }
             cl0+='\n}\n'
-             var car=Qt.createQmlObject(cl0, xData.children[0].children[i], 'qmlChar')
-
-
-
+            var car=Qt.createQmlObject(cl0, xData.children[0].children[i], 'qmlChar')
         }
         r.maxCols=maxCol
+        sl()
+    }
+    function setEnter(){
+        var nt=''
+        for(var i=0;i<xD.children.length-1;i++){
+            var d =''+xD.children[i].children[0].text
+            console.log('\n\n\n\nt'+i+':'+d)
+            var a=d.split(r.splitString)
+            if(a.length>1){
+                nt+=a[0]+'\n'
+                nt+=a[1]+'\n'
+            }else{
+                nt+=d+'\n'
+            }
+            //console.log('ssss:'+xD.children[0].children[i].width)
+            //var nl=(''+l[i]).length
+
+        }
+        r.text=nt
+        updateChars()
+    }
+
+    function splitBlock(){
+        var nt=''
+        for(var i=0;i<xD.children.length-1;i++){
+            var d =''+xD.children[i].children[0].text
+            console.log('\n\n\n\nt'+i+':'+d)
+            var a=d.split(r.splitString)
+            if(a.length>1){
+                nt+=a[0]+'\n'
+                nt+=a[1]+'\n'
+            }else{
+                nt+=d+'\n'
+            }
+            //console.log('ssss:'+xD.children[0].children[i].width)
+            //var nl=(''+l[i]).length
+
+        }
+        r.text=nt
+        updateChars()
+    }
+    function updateChars(){
+        var d=r.text.replace(/\\n/g,'\\\\n')
+        var l=d.split('\n')
+        var maxCol=0
+        var narray=[]
+        for(var i=0;i<l.length;i++){
+            var nl=(''+l[i]).length
+            if(nl>maxCol){
+                maxCol=nl
+            }
+        }
+        repXD.model=l
     }
     function sl(){
         flTE.contentY=0-(flTE.height/2)+(r.fs*1.2*r.currentLine)+r.fs*0.6
-        txtInf.text=''+xData.children[0].children[1].children[0].children[r.currentCol].x
+        //txtInf.text=''+xData.children[0].children[1].children[0].children[r.currentCol].x
         flTE.x=(r.width/2)-xData.children[0].children[1].children[0].children[r.currentCol].x
         r.uCar='c'+r.currentLine+'-'+r.currentCol
+    }
+    function addEsp(l,c){
+        var cl0=''
+        cl0='import QtQuick 2.0\n'
+        cl0+='\nXChar{\n'
+        cl0+='      t: 1;\n'
+        cl0+='      c:\' \';\n'
+        cl0+='      h: r.fs;\n'
+        cl0+='      fs: r.fs;\n'
+        cl0+='      color: objectName===r.uCar?"blue":"yellow";\n'
+        cl0+='      fc: "white";\n'
+        cl0+='      ed: r;\n'
+        cl0+='      lin: '+l+';\n'
+        cl0+='      col: '+parseInt(c+1)+';\n'
+        cl0+='      border.width: 1;\n'
+        cl0+='      border.color: "red";\n'
+        cl0+='      Timer {\n'
+        cl0+='      running: true\n'
+        cl0+='      repeat: false\n'
+        cl0+='      interval: 100\n'
+        cl0+='      onTriggered: r.currentCol='+parseInt(c+1)+';\n'
+        cl0+='      }\n'
+        cl0+='\n}\n'
+        //console.log('--->'+xData.children[0].children[l].children[0].children.length)
+        var car=Qt.createQmlObject(cl0, xData.children[0].children[l].children[0], 'qmlChar')
+        xData.children[0].children[r.currentLine].children[0].children[c].t=-1
+        //r.maxCols++
+        //r.currentCol++
+
+        //sl()
+    }
+    function dDer(){
+        //console.log('RRR: '+xData.children[0].children[r.currentLine].children[0].children[r.currentCol].t)
+        /*if(xData.children[0].children[r.currentLine].children[0].children[r.currentCol].t===1){
+            addEsp(r.currentLine, r.currentCol)
+        }else{
+            r.currentCol++
+            xData.children[0].children[r.currentLine].children[0].children[r.currentCol].t=-1
+        }*/
+        if(xData.children[0].children[r.currentLine].children[0].children.length-1===r.currentCol){
+            addEsp(r.currentLine, r.currentCol)
+        }else{
+            r.currentCol++
+        }
     }
 }
 

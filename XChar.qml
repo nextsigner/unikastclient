@@ -10,9 +10,19 @@ Rectangle {
     property int lin:-1
     property int col:-1
     property var ed
+    property int t:-1//0=firts 1=last
     objectName: 'c'+lin+'-'+col
     Text{
         id:dc
+    }
+    Rectangle{
+        width: r.width-2
+        height: r.height-2
+        anchors.centerIn: r
+        border.width: 3
+        border.color: '#ff8833'
+        color: 'transparent'
+        visible:r.t===1
     }
     MouseArea{
         anchors.fill: r
