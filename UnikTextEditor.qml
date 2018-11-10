@@ -3,6 +3,7 @@ import QtQuick.Controls 2.0
 import Qt.labs.settings 1.0
 Item{
     id:r
+    property alias textEditor: te
     property int modo: 1
 
     property int fs: 16
@@ -13,7 +14,7 @@ Item{
 
     property int col: 0
     property int lin: 0
-
+    signal sendCode(string code)
     Settings{
         id: eSettings
         category: 'conf-unikeditor'
@@ -23,20 +24,8 @@ Item{
     }
 
     focus: true
-    /*Keys.onPressed:  {
-        if (event.key == Qt.Key_I){
-                r.modo=1
-        }
-    }*/
-    onModoChanged: {
-        if(modo===1){
 
-        }
-        if(modo===0){
-            //te.focus=false
-            //r.focus=true
-        }
-    }
+    onWidthChanged: te.setPos()
     Flickable{
         id:flTE
         width: r.width
@@ -67,7 +56,7 @@ Item{
                     Item{
                         id:xNlI
                         width:(nli.text.length-8)*r.fs
-                        height: r.fs*1.3
+                        height: r.fs*1.2
                         anchors.right: parent.right
                         Text {
                             id:nli
@@ -94,23 +83,13 @@ Item{
                 color: r.color
                 property bool ins: false
                 property string ccl: '.'
+                property string ccl2: '.'
                 cursorDelegate: Rectangle{
                     id:teCursor
                     width: tec.width;
                     height: r.fs
                     radius: width*0.5
                     color:'transparent'
-                    //                    onXChanged: {
-                    //                        var nc=0
-                    //                        var n=te.cursorPosition
-                    //                        if(n>0){
-                    ////                            while(te.text.substring(n-1,n)!=='\n'||n>0){
-                    ////                                nc++
-                    ////                                n--
-                    ////                            }
-                    //                        }
-                    //                        r.col=nc
-                    //                    }
                     Rectangle{
                         id:tec
                         width: cc.contentWidth;
@@ -128,6 +107,31 @@ Item{
                             color: 'red'
                             anchors.centerIn: parent
                         }
+                        Rectangle{
+                            id:tecDer
+                            width: ccDer.contentWidth;
+                            height: r.fs
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.left: parent.right
+                            color: 'transparent'
+                            border.color:te.color
+                            border.width:v?1:0
+                            property bool v: true
+                            Timer{
+                                running: true
+                                repeat: true
+                                interval: 500
+                                onTriggered:tecDer.v=!tecDer.v
+                            }
+                            Text{
+                                id:ccDer
+                                text:te.ccl2!==''&&te.ccl2!=='\n'?te.ccl2:' '
+                                font.pixelSize: te.font.pixelSize
+                                color: 'red'
+                                anchors.centerIn: parent
+                            }
+                        }
+
                     }
                     Item{
                         id:tecinit
@@ -178,10 +182,6 @@ Item{
                         te.vpe=0
                     }
                 }
-                /*Keys.onReturnPressed: {
-                    vpe++
-                    tvpe.start()
-                }*/
                 onTextChanged: {
                     te.ins=true
                     te.setPos()
@@ -191,6 +191,7 @@ Item{
                 function setPos(){
                     //console.log('LLLLL:-'+te.text.substring(te.cursorPosition-1,te.cursorPosition)+'-')
                     te.ccl=te.text.substring(te.cursorPosition-1,te.cursorPosition)
+                    te.ccl2=te.text.substring(te.cursorPosition,te.cursorPosition+1)
                     flTE.contentX=(te.cursorRectangle.x)+r.fs+r.fs*0.5+te.cursorRectangle.width
                     flTE.contentY=(te.cursorRectangle.y-r.height/2)+r.fs*0.5+flTE.y
                     r.lin=parseInt(te.cursorRectangle.y/te.cursorRectangle.height)
@@ -222,7 +223,7 @@ Item{
                 Item{
                     id:xNl
                     width:(nl.text.length-8)*r.fs
-                    height: r.fs*1.3
+                    height: r.fs*1.2
                     anchors.right: parent.right
                     Text {
                         id:nl
@@ -369,7 +370,7 @@ Item{
     }
 
     Text{
-        text:'line: '+r.lin+' column: '+r.col+' mode: '+r.modo
+        text:'mode: '+r.modo
         font.pixelSize: r.fs
         color: r.color
         anchors.bottom: r.bottom
@@ -421,6 +422,13 @@ Item{
                 appSettings.fs--
             }
 
+        }
+    }
+    Shortcut {
+        sequence: "Ctrl+r"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            sendCode(te.text)
         }
     }
     Shortcut {

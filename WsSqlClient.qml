@@ -14,6 +14,7 @@ Item {
     property string sqliteFileName: 'wssqlclient.sqlite'
     //property var textInputData
     property string loginUserName
+    signal loguinSucess()
     onUrlChanged: {
         socket.url=url
         xWsUrl.visible=false
@@ -133,58 +134,85 @@ Item {
 
     Rectangle {
         id: xUserName
-        width: 300
-        height: 200
+        width: rowUN.width+app.fs
+        height:r.fs*1.6
+        color:app.c3
         visible:false
         anchors.centerIn: parent
+        onVisibleChanged: {
+            if(visible){
+                tiUserName.focus=true
+            }
+        }
         Column{
             spacing: r.fs*0.5
             Row{
+                id:rowUN
                 spacing: r.fs*0.5
                 Text{
                     text: 'User Name: '
                     font.pixelSize: r.fs
+                    color:app.c2
                 }
-                TextArea{
+                TextEdit{
                     id:tiUserName
                     width: r.width*0.5
-
-                }
-                /*Rectangle{
-                    id:xTiUser
-                    width: r.width*0.5
                     height: r.fs*1.2
-                    border.width: 1
-                    radius: 8
-                    TextInput{
-                        id:tiUserName
-                        font.pixelSize: r.fs
-                        width: parent.width
-                        height: r.fs
-                        anchors.centerIn: parent
+                    font.pixelSize: r.fs
+                    color:app.c2
+                    anchors.verticalCenter: parent.verticalCenter
+                    cursorDelegate: Rectangle{
+                        id:cte
+                        width: app.fs*0.25
+                        height: app.fs
+                        color:v?app.c2:'transparent'
+                        property bool v: true
+                        Timer{
+                            running: xUserName.visible
+                            repeat: true
+                            interval: 650
+                            onTriggered: cte.v=!cte.v
+                        }
                     }
-                }*/
+                    Keys.onReturnPressed: {
+                        xUserName.loguin()
+                    }
+                    Rectangle{
+                        width: parent.width+r.fs*0.25
+                        height: parent.height+r.fs*0.25
+                        color: 'transparent'
+                        anchors.centerIn: parent
+                        border.width: 1
+                        border.color: app.c2
+                    }
+                }
             }
             Button{
                 text: 'Conectar'
                 font.pixelSize: r.fs
                 anchors.right: parent.right
                 onClicked: {
-                    //call the login method
-                    r.channel.objects.chatserver.login(tiUserName.text, function(arg) {
-                        //check the return value for success
-                        if (arg === true) {
-                            //loginUi.nameInUseError.visible = false;
-                            r.loginUserName=tiUserName.text
-                            tiUserName.color=undefined
-                            xUserName.visible=false
-                        } else {
-                            tiUserName.color='red'
-                        }
-                    });
+                    xUserName.loguin()
                 }
             }
         }
+        function loguin(){
+            r.channel.objects.chatserver.login(tiUserName.text, function(arg) {
+                //check the return value for success
+                if (arg === true) {
+                    //loginUi.nameInUseError.visible = false;
+                    r.loginUserName=tiUserName.text
+                    //tiUserName.color=undefined
+                    xUserName.visible=false
+                    tiUserName.focus=false
+                    r.focus=false
+                    loguinSucess()
+                } else {
+                    tiUserName.color='red'
+                }
+            });
+        }
+
     }
 
 

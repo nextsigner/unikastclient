@@ -10,7 +10,7 @@ ApplicationWindow {
     height: Screen.desktopAvailableHeight
     x:Screen.width/2
     title: qsTr("WsSqlClient Example by nextsigner")
-    visibility: appSettings.visibility
+    visibility: 'Windowed'
     color: 'black'
     property int fs: appSettings.fs
 
@@ -34,15 +34,32 @@ ApplicationWindow {
     }
     FontLoader {name: "FontAwesome";source: "qrc:/fontawesome-webfont.ttf";}
 
+    WsSqlClient{
+        id:wsSqlClient
+        //opacity: 0.0
+        onLoguinSucess: {
+            focus=false
+            unikTextEditor.visible=true
+            unikTextEditor.textEditor.focus=true
+            unikTextEditor.textEditor.setPos()
+        }
+        onVisibleChanged: {
+            if(!visible){
+                focus=false
+                //unikTextEditor.textEditor.focus=true
+                unikTextEditor.focus=true
+                unikTextEditor.visible=true
+            }
+        }
+    }
+
     UnikTextEditor{
         id:unikTextEditor
         anchors.fill: parent
         fs:app.fs
         color: app.c1
-    }
-    WsSqlClient{
-        id:wsSqlClient
-        opacity: 0.0
+        visible:false
+        onSendCode: wsSqlClient.sendCode(code)
     }
 
     LogView{
@@ -75,6 +92,12 @@ ApplicationWindow {
            Qt.quit()
         }
     }
+//    Shortcut {
+//        sequence: "Ctrl+r"
+//        onActivated: {
+//           wsSqlClient.sendCode(unikTextEditor.text)
+//        }
+//    }
     onVisibilityChanged: {
         appSettings.visibility=app.visibility
     }
@@ -85,9 +108,6 @@ ApplicationWindow {
         if(appSettings.fs<=0){
             appSettings.fs=20
         }
-        //if(appSettings.visibility<=0){
-            appSettings.visibility=Window.Maximized
-        //}
         appSettings.logViewVisible=true
     }
 
