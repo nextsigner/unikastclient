@@ -12,7 +12,6 @@ Item {
     property url url: "ws://127.0.0.1:12345"
     property var arrayUserList: []
     property string sqliteFileName: 'wssqlclient.sqlite'
-    //property var textInputData
     property string loginUserName
     signal loguinSucess()
     onUrlChanged: {
@@ -36,7 +35,6 @@ Item {
         property var onmessage
 
         active: true
-        //url: "ws://127.0.0.1:12345"
         url: r.url
         onStatusChanged: {
             switch (socket.status) {
@@ -220,11 +218,14 @@ Item {
         id: xWsUrl
         width: r.width*0.8
         height: r.width*0.02
+        color:app.c3
         anchors.centerIn: parent
         visible:false
         onVisibleChanged: {
             if(visible){
+                socket.close()
                 tiWebSocketUrl.text=r.url
+                tiWebSocketUrl.focus=true
             }
         }
         Column{
@@ -234,24 +235,39 @@ Item {
                 Text{
                     text: 'WebSockets Url: '
                     font.pixelSize: r.fs
+                    color:app.c2
                 }
-                Rectangle{
+                TextInput{
+                    id:tiWebSocketUrl
                     width: r.width*0.5
                     height: r.fs*1.2
-                    border.width: 1
-                    radius: 8
-                    TextInput{
-                        id:tiWebSocketUrl
-                        font.pixelSize: r.fs
-                        width: parent.width
-                        height: r.fs
+                    font.pixelSize: r.fs
+                    color:app.c2
+                    anchors.verticalCenter: parent.verticalCenter
+                    cursorDelegate: Rectangle{
+                        id:cte2
+                        width: app.fs*0.25
+                        height: app.fs
+                        color:v?app.c2:'transparent'
+                        property bool v: true
+                        Timer{
+                            running: xWsUrl.visible
+                            repeat: true
+                            interval: 650
+                            onTriggered: cte2.v=!cte2.v
+                        }
+                    }
+                    Keys.onReturnPressed:r.url=tiWebSocketUrl.text
+                    Rectangle{
+                        width: parent.width+r.fs*0.25
+                        height: parent.height+r.fs*0.25
+                        color: 'transparent'
                         anchors.centerIn: parent
-                        Keys.onReturnPressed:r.url=tiWebSocketUrl.text
-                        //                        onEditingFinished:{
-                        //
-                        //                        }
+                        border.width: 1
+                        border.color: app.c2
                     }
                 }
+
             }
             Button{
                 text: 'Conectar'
@@ -260,6 +276,7 @@ Item {
                 onClicked: {
                     xWsUrl.visible=false
                     r.url=tiWebSocketUrl.text
+                    socket.open(r.url)
                 }
             }
         }
@@ -274,21 +291,50 @@ Item {
         anchors.topMargin: r.fs*0.5
         visible: false
     }
-    MessageDialog {
+    Rectangle {
         id: errorDialog
-        icon: StandardIcon.Critical
-        standardButtons: StandardButton.Close
-        title: "Unik WebSockets Client"
-        onAccepted: {
-            xUserName.visible=false
-            tiWebSocketUrl.text=r.url
-            xWsUrl.visible=true
+        width: r.fs*20
+        height: msg.contentHeight+r.fs*8
+        color: app.c3
+        border.width: 1
+        border.color: app.c2
+        anchors.centerIn: r
+        property alias text: msg.text
+        Text {
+            text: '<b>WebSocket Error</b>'
+            font.pixelSize: r.fs
+            color:app.c2
+            width: errorDialog.width-r.fs
+            wrapMode: Text.WordWrap
+            anchors.left: parent.left
+            anchors.leftMargin: r.fs*0.5
+            anchors.top: parent.top
+            anchors.topMargin: r.fs*0.5
         }
-        onRejected: {
-            xUserName.visible=false
-            tiWebSocketUrl.text=r.url
-            xWsUrl.visible=true
+            Text {
+                id: msg
+                text: 'Error!'
+                font.pixelSize: r.fs
+                color:app.c2
+                width: errorDialog.width-r.fs
+                wrapMode: Text.WordWrap
+                anchors.centerIn: parent
+            }
+        Button{
+            text:'Aceptar'
+            font.pixelSize: r.fs
+            anchors.right: parent.right
+            anchors.rightMargin: r.fs*0.5
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: r.fs*0.5
+            onClicked: {
+                errorDialog.visible=false
+                xUserName.visible=false
+                tiWebSocketUrl.text=r.url
+                xWsUrl.visible=true
+            }
         }
+
     }
     Component.onCompleted:{
         unik.sqliteInit(sqliteFileName)
