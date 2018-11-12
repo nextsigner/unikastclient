@@ -34,33 +34,50 @@ ApplicationWindow {
     }
     FontLoader {name: "FontAwesome";source: "qrc:/fontawesome-webfont.ttf";}
 
-    WsSqlClient{
-        id:wsSqlClient
-        //opacity: 0.0
-        onLoguinSucess: {
-            focus=false
-            unikTextEditor.visible=true
-            unikTextEditor.textEditor.focus=true
-            unikTextEditor.textEditor.setPos()
-        }
-        onVisibleChanged: {
-            if(!visible){
-                focus=false
-                //unikTextEditor.textEditor.focus=true
-                unikTextEditor.focus=true
-                unikTextEditor.visible=true
-            }
-        }
-    }
 
     UnikTextEditor{
         id:unikTextEditor
         anchors.fill: parent
         fs:app.fs
         color: app.c1
-        visible:false
+        visible:!wsSqlClient.visible
         onSendCode: wsSqlClient.sendCode(code)
     }
+    WsSqlClient{
+        id:wsSqlClient
+        onLoguinSucess: {
+            focus=false
+            visible=false
+            unikTextEditor.visible=true
+            unikTextEditor.textEditor.focus=true
+            unikTextEditor.textEditor.setPos()
+        }
+        onKeepAliveSuccess: {
+//            focus=false
+//            visible=false
+//            unikTextEditor.visible=true
+//            //unikTextEditor.textEditor.focus=true
+//            console.log('KeepAliveSuccess...')
+        }
+        onErrorSucess: {
+            console.log('WebSockets Error success...')
+            focus=true
+            visible=true
+            unikTextEditor.visible=false
+            unikTextEditor.textEditor.focus=false
+        }
+        onVisibleChanged: {
+            if(!visible){
+                focus=false
+                //unikTextEditor.textEditor.focus=true
+                //unikTextEditor.focus=true
+                //unikTextEditor.visible=true
+            }else{
+                unikTextEditor.visible=true
+            }
+        }
+    }
+
 
     LogView{
         width: parent.width
@@ -70,6 +87,7 @@ ApplicationWindow {
         anchors.bottom: parent.bottom
         //visible: appSettings.logViewVisible
     }
+    UnikBusy{id:ub;running: false}
     Shortcut {
         sequence: "Shift+Left"
         onActivated: {

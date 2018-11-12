@@ -11,7 +11,7 @@ import QtQuick 2.0
 Rectangle{
 	width:parent.width
 	height:parent.height
-	color:"red"
+	color:"pink"
 	Rectangle{
 		width:parent.width*0.4
 		height:width

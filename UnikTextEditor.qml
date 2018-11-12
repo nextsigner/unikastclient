@@ -239,6 +239,39 @@ Item{
         }
     }
     Rectangle{
+        id:xCentro
+        width: r.fs*5
+        height: r.fs*2
+        border.width: bw
+        border.color: 'red'
+        color:'transparent'
+        anchors.centerIn: r
+        visible: r.modo===1
+        radius: r.modificado?r.fs:0
+        property int bw: 5
+        SequentialAnimation{
+            running: !te.ins
+            loops: Animation.Infinite
+            onRunningChanged: xCentro.bw=1
+            NumberAnimation {
+                target: xCentro
+                property: "bw"
+                from:1
+                to:4
+                duration: 1000
+                easing.type: Easing.InOutQuad
+            }
+        }
+        Rectangle{
+            width: r.fs*0.6
+            height: width
+            color:'red'
+            anchors.centerIn: parent
+            radius: width*0.5
+            opacity: 0.0
+        }
+    }
+    Rectangle{
         id:xTF
         color: r.backgroundColor
         width: r.width*0.8
@@ -288,12 +321,13 @@ Item{
                     }
                 }
             }
-            height: r.fs*1.2
+            height:contentHeight
             wrapMode: Text.WordWrap
             onTextChanged: {
                 tf.color=unik.fileExist(tf.text)?r.color:'red'
             }
             Keys.onReturnPressed: {
+                ub.running=true
                 if(xTF.modo===1){
                     if(unik.fileExist(tf.text)){
                         te.cursorPosition=0
@@ -314,59 +348,27 @@ Item{
                     if(xTF.confirmar===0&&unik.fileExist(tf.text)){
                         xTF.confirmar=1
                     }else{
-                        te.cursorPosition=0
-                        eSettings.currentFilePath=tf.text
-                        unik.setFile(eSettings.currentFilePath, te.text)
-                        r.text=te.text
-                        xTF.confirmar=0
-                        xTF.visible=false
-                        r.modo=1
-                        te.focus=true
-                        te.setPos()
+                        if(!unik.fileExist(tf.text)){
+                            var mf0=tf.text.split('/')
+                            var folders=''
+                            for(var i=0;i<mf0.length-1;i++){
+                                folders+='/'+mf0[i]
+                                if(!unik.fileExist(folders)){
+                                    unik.mkdir(folders)
+                                }
+                            }
+                        }
+                        timerSave.start()
                     }
 
                 }else{
                     xTF.visible=false
                 }
-
+                //ub.running=false
             }
             Keys.onEscapePressed: r.modo=1
         }
 
-
-    }
-    Rectangle{
-        id:xCentro
-        width: r.fs*5
-        height: r.fs*2
-        border.width: bw
-        border.color: 'red'
-        color:'transparent'
-        anchors.centerIn: r
-        visible: r.modo===1
-        radius: r.modificado?r.fs:0
-        property int bw: 5
-        SequentialAnimation{
-            running: !te.ins
-            loops: Animation.Infinite
-            onRunningChanged: xCentro.bw=1
-            NumberAnimation {
-                target: xCentro
-                property: "bw"
-                from:1
-                to:4
-                duration: 1000
-                easing.type: Easing.InOutQuad
-            }
-        }
-        Rectangle{
-            width: r.fs*0.6
-            height: width
-            color:'red'
-            anchors.centerIn: parent
-            radius: width*0.5
-            opacity: 0.0
-        }
     }
 
     Text{
@@ -376,7 +378,9 @@ Item{
         anchors.bottom: r.bottom
         anchors.bottomMargin: r.fs*2
         anchors.right: r.right
+        opacity: 0.65
     }
+
     Shortcut {
         sequence: "Esc"
         onActivated: {
@@ -540,6 +544,24 @@ Item{
             }else{
                 te.cursorPosition=n0-caracteresAnteriores-1
             }
+        }
+    }
+    Timer{
+        id:timerSave
+        running: false
+        repeat: false
+        interval: 2000
+        onTriggered: {
+            te.cursorPosition=0
+            eSettings.currentFilePath=tf.text
+            unik.setFile(eSettings.currentFilePath, te.text)
+            r.text=te.text
+            xTF.confirmar=0
+            xTF.visible=false
+            r.modo=1
+            te.focus=true
+            te.setPos()
+            ub.running=false
         }
     }
 

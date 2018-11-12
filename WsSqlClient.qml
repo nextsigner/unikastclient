@@ -3,9 +3,10 @@ import QtQuick.Controls 2.0
 import QtQuick.Dialogs 1.2
 import Qt.WebSockets 1.0
 import "qwebchannel.js" as WebChannel
-Item {
+Rectangle {
     id: r
     anchors.fill: parent
+   color:app?app.c3:'gray'
     property int fs: app && app.fs ? app.fs:r.width*0.03
     property var channel
     property var listView
@@ -14,47 +15,39 @@ Item {
     property string sqliteFileName: 'wssqlclient.sqlite'
     property string loginUserName
     signal loguinSucess()
+   signal errorSucess()
+   signal keepAliveSuccess()
     onUrlChanged: {
         socket.url=url
         xWsUrl.visible=false
         xUserName.visible=false
-        l.visible=true
     }
     WebSocket {
         id: socket
-
-        // the following three properties/functions are required to align the QML WebSocket API
-        // with the HTML5 WebSocket API.
         property var send: function(arg) {
             sendTextMessage(arg);
         }
         onTextMessageReceived: {
             onmessage({data: message});
         }
-
         property var onmessage
-
         active: true
         url: r.url
         onStatusChanged: {
             switch (socket.status) {
             case WebSocket.Error:
+                errorSucess()
                 errorDialog.text = "Error: " + socket.errorString;
                 errorDialog.visible = true;
-                l.visible=false
                 break;
             case WebSocket.Closed:
                 errorDialog.text = "Error: Socket at " + url + " closed.";
                 errorDialog.visible = true;
-                l.visible=false
                 break;
             case WebSocket.Open:
                 //open the webchannel with the socket as transport
-                l.visible=true
                 new WebChannel.QWebChannel(socket, function(ch) {
                     r.channel = ch;
-                    //r.url=socket.url
-
                     //connect to the changed signal of the userList property
                     ch.objects.chatserver.userListChanged.connect(function(args) {
                         r.arrayUserList=ch.objects.chatserver.userList
@@ -65,20 +58,10 @@ Item {
                             var sql = 'INSERT INTO users(user, ws, ms)VALUES(\''+ul[i]+'\', \''+r.url+'\',  '+d.getTime()+')'
                             unik.sqlQuery(sql)
                             if(''+ul[i]===tiUserName.text){
-                                xUserName.visible=false
+                                //xUserName.visible=false
                             }
                         }
-                        //listModelUser.arrayUserList = ch.objects.chatserver.userList
-                        //listModelUser.updateUserList()
-
-                        l.visible=false
-                        //                        mainUi.userlist.text = '';
-                        //                        ch.objects.chatserver.userList.forEach(function(user) {
-                        //                            //mainUi.userlist.text += user + '\n';
-                        //                            listModelUser
-                        //                        });
                     });
-
                     //connect to the newMessage signal
                     ch.objects.chatserver.newMessage.connect(function(time, user, message) {
                         var d = new Date(Date.now())
@@ -92,6 +75,7 @@ Item {
                         if (r.loginUserName !== '')
                             //and call the keep alive response method as an answer
                             ch.objects.chatserver.keepAliveResponse(r.loginUserName);
+                            keepAliveSuccess()
                     });
                 });
                 xUserName.visible=true;
@@ -198,9 +182,7 @@ Item {
             r.channel.objects.chatserver.login(tiUserName.text, function(arg) {
                 //check the return value for success
                 if (arg === true) {
-                    //loginUi.nameInUseError.visible = false;
                     r.loginUserName=tiUserName.text
-                    //tiUserName.color=undefined
                     xUserName.visible=false
                     tiUserName.focus=false
                     r.focus=false
@@ -281,18 +263,10 @@ Item {
         }
     }
 
-    Text {
-        id: l
-        text: 'Connecting '+socket.url
-        font.pixelSize: r.fs
-        anchors.horizontalCenter: r.horizontalCenter
-        anchors.top: r.top
-        anchors.topMargin: r.fs*0.5
-        visible: false
-    }
+
     Rectangle {
         id: errorDialog
-        width: r.fs*20
+        width: r.width*0.96
         height: msg.contentHeight+r.fs*8
         color: app.c3
         border.width: 1
@@ -300,6 +274,11 @@ Item {
         anchors.centerIn: r
         visible:false
         property alias text: msg.text
+        onVisibleChanged: {
+            if(visible){
+                errorSucess()
+            }
+        }
         Text {
             text: '<b>WebSocket Error</b>'
             font.pixelSize: r.fs
@@ -331,11 +310,13 @@ Item {
                 errorDialog.visible=false
                 xUserName.visible=false
                 tiWebSocketUrl.text=r.url
+                r.url=''
                 xWsUrl.visible=true
             }
         }
 
     }
+
     Component.onCompleted:{
         unik.sqliteInit(sqliteFileName)
         var sql=''
