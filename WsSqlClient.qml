@@ -9,7 +9,7 @@ Item {
     property int fs: app && app.fs ? app.fs:r.width*0.03
     property var channel
     property var listView
-    property url url: "ws://127.0.0.1:12345"
+    property url url: "ws://127.0.0.1:12344"
     property var arrayUserList: []
     property string sqliteFileName: 'wssqlclient.sqlite'
     property string loginUserName
@@ -276,7 +276,6 @@ Item {
                 onClicked: {
                     xWsUrl.visible=false
                     r.url=tiWebSocketUrl.text
-                    socket.open(r.url)
                 }
             }
         }
@@ -299,6 +298,7 @@ Item {
         border.width: 1
         border.color: app.c2
         anchors.centerIn: r
+        visible:false
         property alias text: msg.text
         Text {
             text: '<b>WebSocket Error</b>'
