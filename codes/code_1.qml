@@ -11,7 +11,7 @@ import QtQuick 2.0
 Rectangle{
 	width:parent.width
 	height:parent.height
-	color:"pink"
+	color:"red"
 	Rectangle{
 		width:parent.width*0.4
 		height:width
@@ -23,5 +23,5 @@ Rectangle{
 			wrapMode: Text.WordWrap
 			anchors.centerIn: parent
 		}
-	}
+	}	
 }

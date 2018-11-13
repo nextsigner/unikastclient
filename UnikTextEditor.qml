@@ -344,6 +344,7 @@ Item{
                         ttf.v=0
                     }
                     console.log('UnikEditor Loading: '+r.text)
+                    ub.running=false
                 }else if(xTF.modo===2){
                     if(xTF.confirmar===0&&unik.fileExist(tf.text)){
                         xTF.confirmar=1
@@ -363,8 +364,8 @@ Item{
 
                 }else{
                     xTF.visible=false
+                    ub.running=false
                 }
-                //ub.running=false
             }
             Keys.onEscapePressed: r.modo=1
         }
