@@ -119,6 +119,7 @@ ApplicationWindow {
             appSettings.fs=20
         }
         appSettings.logViewVisible=true
+
         if(Qt.platform.os==='windows'){
             var anchoBorde=(app.width-unik.frameWidth(app))/2
             var altoBarraTitulo=unik.frameHeight(app)-height
@@ -126,3 +127,4 @@ ApplicationWindow {
         }
     }
 }
+
