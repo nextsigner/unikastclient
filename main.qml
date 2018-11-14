@@ -7,11 +7,13 @@ ApplicationWindow {
     id: app
     visible: true
     width: Screen.width/2
-    height: Screen.desktopAvailableHeight
+    height: Screen.desktopAvailableHeight-altoBarra
     x:Screen.width/2
     title: qsTr("WsSqlClient Example by nextsigner")
     visibility: 'Windowed'
     color: 'black'
+    property int altoBarra: 0
+
     property int fs: appSettings.fs
 
     property color c1: "#62DA06"
@@ -51,14 +53,7 @@ ApplicationWindow {
             unikTextEditor.visible=true
             unikTextEditor.textEditor.focus=true
             unikTextEditor.textEditor.setPos()
-        }
-        onKeepAliveSuccess: {
-//            focus=false
-//            visible=false
-//            unikTextEditor.visible=true
-//            //unikTextEditor.textEditor.focus=true
-//            console.log('KeepAliveSuccess...')
-        }
+        }        
         onErrorSucess: {
             console.log('WebSockets Error success...')
             focus=true
@@ -69,10 +64,7 @@ ApplicationWindow {
         onVisibleChanged: {
             if(!visible){
                 focus=false
-                //unikTextEditor.textEditor.focus=true
-                //unikTextEditor.focus=true
-                //unikTextEditor.visible=true
-            }else{
+                }else{
                 unikTextEditor.visible=true
             }
         }
@@ -127,6 +119,10 @@ ApplicationWindow {
             appSettings.fs=20
         }
         appSettings.logViewVisible=true
+        if(Qt.platform.os==='windows'){
+            var anchoBorde=(app.width-unik.frameWidth(app))/2
+            var altoBarraTitulo=unik.frameHeight(app)-height
+            app.altoBarra=height-(Screen.desktopAvailableHeight-altoBarraTitulo)
+        }
     }
-
 }
