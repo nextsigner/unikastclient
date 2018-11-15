@@ -120,11 +120,11 @@ ApplicationWindow {
         }
         appSettings.logViewVisible=true
 
-        if(Qt.platform.os==='windows'){
-            var anchoBorde=(app.width-unik.frameWidth(app))/2
-            var altoBarraTitulo=unik.frameHeight(app)-height
-            app.altoBarra=height-(Screen.desktopAvailableHeight-altoBarraTitulo)
-        }
+//        if(Qt.platform.os==='windows'){
+//            var anchoBorde=(app.width-unik.frameWidth(app))/2
+//            var altoBarraTitulo=unik.frameHeight(app)-height
+//            app.altoBarra=height-(Screen.desktopAvailableHeight-altoBarraTitulo)
+//        }
     }
 }
 
