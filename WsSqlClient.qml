@@ -319,7 +319,7 @@ Rectangle {
     }
 
     Component.onCompleted:{
-        unik.sqliteInit(sqliteFileName)
+        /*unik.sqliteInit(sqliteFileName)
         var sql=''
         sql= 'CREATE TABLE IF NOT EXISTS users(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -336,7 +336,7 @@ Rectangle {
             ws TEXT,
             ms NUMERIC
             )'
-        unik.sqlQuery(sql)
+        unik.sqlQuery(sql)*/
     }
     function sendCode(c){
         console.log("WsSql sending "+r.loginUserName+" "+c)
