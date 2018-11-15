@@ -1,4 +1,4 @@
-import QtQuick 2.5
+import QtQuick 2.0
 import QtQuick.Controls 2.0
 import QtQuick.Controls.Styles 1.2
 import QtQuick.Window 2.0
@@ -79,7 +79,8 @@ ApplicationWindow {
 //        anchors.bottom: parent.bottom
 //        //visible: appSettings.logViewVisible
 //    }
-    UnikBusy{id:ub;running: false}
+    //UnikBusy{id:ub;running: false}
+    Item{id:ub}
     Shortcut {
         sequence: "Shift+Left"
         onActivated: {
