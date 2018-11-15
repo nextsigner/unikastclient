@@ -71,14 +71,14 @@ ApplicationWindow {
     }
 
 
-    LogView{
-        width: parent.width
-        height: appSettings.lvh
-        fontSize: app.fs
-        topHandlerHeight: Qt.platform.os!=='android'?app.fs*0.25:app.fs*0.75
-        anchors.bottom: parent.bottom
-        //visible: appSettings.logViewVisible
-    }
+//    LogView{
+//        width: parent.width
+//        height: appSettings.lvh
+//        fontSize: app.fs
+//        topHandlerHeight: Qt.platform.os!=='android'?app.fs*0.25:app.fs*0.75
+//        anchors.bottom: parent.bottom
+//        //visible: appSettings.logViewVisible
+//    }
     UnikBusy{id:ub;running: false}
     Shortcut {
         sequence: "Shift+Left"
