@@ -21,6 +21,7 @@ Item{
 
         property int fs
         property string currentFilePath
+        property bool wordWrap
     }
 
     focus: true
@@ -165,7 +166,7 @@ Item{
                 }
                 width: r.width
                 height: r.fs*1.2
-                wrapMode: Text.WordWrap
+                wrapMode: eSettings.wordWrap?Text.WordWrap:Text.Normal
                 property int vpe: 0
                 Timer{
                     id:tvpe
@@ -284,13 +285,32 @@ Item{
             if(visible){
                 tf.focus=true
                 tf.cursorPosition=tf.text.length-1
+                tf.focus=true
             }else{
                 xTF.confirmar=0
                 tf.color=r.color
+                tf.focus=false
             }
         }
         property int modo: -1
         property int confirmar: 0
+        Rectangle{
+            id:xTFConfirm
+            color: r.backgroundColor
+            width: txtconf.contentWidth+r.fs
+            height: r.fs*1.2
+            border.width: 1
+            border.color: confirmar===0?r.color:'red'
+            anchors.bottom: parent.top
+            visible: xTF.confirmar===1
+            Text{
+                id:txtconf
+                text:'File exist! Press Return for save file.'
+                font.pixelSize: r.fs
+                color:tf.color
+                anchors.centerIn: parent
+            }
+        }
         TextEdit{
             id:tf
             text:eSettings.currentFilePath
@@ -326,12 +346,14 @@ Item{
             onTextChanged: {
                 tf.color=unik.fileExist(tf.text)?r.color:'red'
             }
+            focus: true
             Keys.onReturnPressed: {
-                ub.running=true
-                if(xTF.modo===1){
+                if(xTF.modo===1){//Open File
                     if(unik.fileExist(tf.text)){
+                        ub.running=true
                         te.cursorPosition=0
                         eSettings.currentFilePath=tf.text
+                        console.log('UnikEditor Loading: '+eSettings.currentFilePat)
                         r.text=unik.getFile(eSettings.currentFilePath)
                         r.modificado=false
                         xTF.confirmar=0
@@ -340,25 +362,30 @@ Item{
                         te.focus=true
                         te.setPos()
                     }else{
+                        console.log('UnikEditor Error: File not exist!')
                         tf.text='File not exist'
                         ttf.v=0
                     }
-                    console.log('UnikEditor Loading: '+r.text)
                     ub.running=false
-                }else if(xTF.modo===2){
+                }else if(xTF.modo===2){//Save
+                    console.log('UnikEditor Saving...')
                     if(xTF.confirmar===0&&unik.fileExist(tf.text)){
                         xTF.confirmar=1
+                        console.log('UnikEditor Question: Confirm save file?')
                     }else{
+                        ub.running=true
                         if(!unik.fileExist(tf.text)){
                             var mf0=tf.text.split('/')
                             var folders=''
                             for(var i=0;i<mf0.length-1;i++){
                                 folders+='/'+mf0[i]
                                 if(!unik.fileExist(folders)){
+                                    console.log('UnikEditor mkdir: '+folders)
                                     unik.mkdir(folders)
                                 }
                             }
                         }
+                        console.log('UnikEditor finishing ...')
                         timerSave.start()
                     }
 
@@ -367,7 +394,6 @@ Item{
                     ub.running=false
                 }
             }
-            Keys.onEscapePressed: r.modo=1
         }
 
     }
@@ -385,7 +411,12 @@ Item{
     Shortcut {
         sequence: "Esc"
         onActivated: {
-            r.modo=0
+            if(xTF.visible){
+                xTF.visible=false
+            }else{
+                r.modo=0
+            }
+
         }
     }
     Shortcut {
@@ -560,6 +591,7 @@ Item{
             xTF.confirmar=0
             xTF.visible=false
             r.modo=1
+            r.modificado=false
             te.focus=true
             te.setPos()
             ub.running=false
