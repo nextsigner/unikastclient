@@ -139,6 +139,8 @@ Rectangle{
                 t: '\uf063'
                 b: raiz.bgColor
                 c: raiz.fontColor
+                d:'Reducir LogView hacia abajo'
+                tp:1
                 onClicking: {
                     raiz.height=0+lineRTop.height
                 }
@@ -150,6 +152,8 @@ Rectangle{
                 t: ''
                 b: raiz.bgColor
                 c: raiz.fontColor
+                d:raiz.showPlainText?'LogView a HTML':'LogView a TXT'
+                tp:1
                 onClicking: {
                     raiz.showPlainText=!raiz.showPlainText
                 }
@@ -168,6 +172,8 @@ Rectangle{
                 t: '\uf12d'
                 b: raiz.bgColor
                 c: raiz.fontColor
+                d:'Limpiar LogView'
+                tp:1
                 onClicking: {
                     logTxt.text=''
                 }
@@ -179,39 +185,54 @@ Rectangle{
                 t: '<b>?</b>'
                 b: raiz.bgColor
                 c: raiz.fontColor
+                d:'Acerca de Unikast'
+                tp:1
                 onClicking: {
-                    logTxt.text+=raiz.help
-                    fk.contentY=fk.contentHeight-fk.height
-                    fk.draged=false
+                   showInfo()
                 }
             }
-
             Item{
                 width: parent.height
                 height: width
             }
-
             Boton{//a unik-tools
                 w:parent.height
                 h: w
                 t: '\uf015'
                 b: raiz.bgColor
                 c: raiz.fontColor
+                d:'Iniciar Unik-Tools'
+                tp:1
                 visible: !raiz.enUnikTools
                 onClicking: {
-                    //unik.mainWindow(1).close();
-                    var main=appsDir+'/unik-tools/main.qml'
-                    unik.log('Loading Unik-Tools Home: '+main)
-                    engine.load(main)
+                    unik.ejecutarLineaDeComandoAparte(appExec+' -folder='+appsDir+'/unik-tools  -cfg')
                 }
             }
-
+            Boton{
+                id:btnFS
+                w:parent.height
+                h: w
+                t: '\uf0b2'
+                b: raiz.bgColor
+                c: raiz.fontColor
+                d:'FullScreen'
+                tp:1
+                onClicking: {
+                    if(app.visibility===Window.FullScreen){
+                        app.visibility='Windowed'
+                    }else{
+                        app.visibility='FullScreen'
+                    }
+                }
+            }
             Boton{//Restart
                 w:parent.height
                 h: w
                 t: '\uf021'
                 b: raiz.bgColor
                 c: raiz.fontColor
+                d:'Reiniciar'
+                tp:1
                 visible: !raiz.enUnikTools
                 onClicking: {
                     unik.restartApp()
@@ -230,12 +251,15 @@ Rectangle{
                 t: "\uf011"
                 b: raiz.bgColor
                 c: raiz.fontColor
+                d:'Apagar'
+                tp:1
                 visible: !raiz.enUnikTools
                 onClicking: {
                     Qt.quit()
                 }
             }
         }
+
     }
 
     onHeightChanged: appSettings.lvh=height
@@ -279,23 +303,6 @@ Rectangle{
         if(raiz.fontSize<=0){
             raiz.fontSize = 14
         }
-        raiz.help=''
-                +'<b>Plugins LogView Example</b><br />'
-                +'<b>import</b> LogView 1.0<br />'
-                +'<b>LogView {</b><br />'
-                +'&nbsp;&nbsp;&nbsp;&nbsp;width: 500<br />'
-                +'&nbsp;&nbsp;&nbsp;&nbsp;height: 300<br />'
-                +'&nbsp;&nbsp;&nbsp;&nbsp;anchors.centerIn:parent<br />'
-                +'&nbsp;&nbsp;&nbsp;&nbsp;showUnikControls:true<br />'
-                +'&nbsp;&nbsp;&nbsp;&nbsp;topHandlerHeight:4<br />'
-                +'&nbsp;&nbsp;&nbsp;&nbsp;handleColor:"green"<br />'
-                +'&nbsp;&nbsp;&nbsp;&nbsp;maxLength:5000000<br />'
-                +'&nbsp;&nbsp;&nbsp;&nbsp;showUnikInitMessages:false<br />'
-                +'&nbsp;&nbsp;&nbsp;&nbsp;fontFamily: "Arial Black"<br />'
-                +'&nbsp;&nbsp;&nbsp;&nbsp;fontSize: 25<br />'
-                +'&nbsp;&nbsp;&nbsp;&nbsp;fontColor: "#00ff88"<br />'
-                +'<b>}</b><br />'
-
     }
     function log(l){
         if((''+l).indexOf('QSslSocket')>-1){
@@ -311,5 +318,24 @@ Rectangle{
     }
     function clear(){
         logTxt.text=''
+    }
+    function showInfo(){
+        var data=''+unik.getFile(appsDir+'/'+app.moduleName+'/README.md')
+        var m0=data.split('\n')
+        var nd=''
+        for(var i=0;i<m0.length;i++){
+            var l=''+m0[i]
+            if(l.substring(0,1)==='#'){
+                nd+='<h1>'+l.substring(1,l.length)+'</h1>'
+            }else if(l.substring(0,2)==='##'){
+                    nd+='<h2>'+l.substring(3,l.length)+'</h2>'
+            }else{
+                nd+=l+'<br />'
+            }
+        }
+        log(nd)
+        if(raiz.height<400){
+            raiz.height=400
+        }
     }
 }

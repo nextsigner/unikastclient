@@ -12,6 +12,7 @@ ApplicationWindow {
     title: qsTr("WsSqlClient Example by nextsigner")
     visibility: 'Windowed'
     color: 'black'
+    property string moduleName: 'unikastclient'
     property int altoBarra: 0
 
     property int fs: appSettings.fs
@@ -35,8 +36,6 @@ ApplicationWindow {
         property real visibility
     }
     FontLoader {name: "FontAwesome";source: "qrc:/fontawesome-webfont.ttf";}
-
-
     UnikTextEditor{
         id:unikTextEditor
         anchors.fill: parent
@@ -74,8 +73,8 @@ ApplicationWindow {
         height: appSettings.lvh
         fontSize: app.fs
         topHandlerHeight: Qt.platform.os!=='android'?app.fs*0.25:app.fs*0.75
+        showUnikControls: true
         anchors.bottom: parent.bottom
-        //visible: appSettings.logViewVisible
     }
     UnikBusy{id:ub;running: false}
     Shortcut {
@@ -100,16 +99,13 @@ ApplicationWindow {
            Qt.quit()
         }
     }
-//    Shortcut {
-//        sequence: "Ctrl+r"
-//        onActivated: {
-//           wsSqlClient.sendCode(unikTextEditor.text)
-//        }
-//    }
     onVisibilityChanged: {
         appSettings.visibility=app.visibility
     }
     Component.onCompleted: {
+        var ukldata='-folder='+appsDir+'/'+app.moduleName+' -cfg'
+        var ukl=appsDir+'/link_'+app.moduleName+'.ukl'
+        unik.setFile(ukl, ukldata)
         if(appSettings.lvh<=0){
             appSettings.lvh=100
         }
@@ -117,12 +113,6 @@ ApplicationWindow {
             appSettings.fs=20
         }
         appSettings.logViewVisible=true
-
-//        if(Qt.platform.os==='windows'){
-//            var anchoBorde=(app.width-unik.frameWidth(app))/2
-//            var altoBarraTitulo=unik.frameHeight(app)-height
-//            app.altoBarra=height-(Screen.desktopAvailableHeight-altoBarraTitulo)
-//        }
     }
 }
 
