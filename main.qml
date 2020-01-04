@@ -9,7 +9,7 @@ ApplicationWindow {
     width: Screen.width/2
     height: Screen.desktopAvailableHeight-altoBarra
     x:Screen.width/2
-    title: qsTr("WsSqlClient Example by nextsigner")
+    title: qsTr("UnikastClient Example by nextsigner")
     visibility: 'Windowed'
     color: 'black'
     property string moduleName: 'unikastclient'
